@@ -113,7 +113,7 @@ function CaseDetail() {
             <div className="text-sm text-muted-foreground mt-1">Case No. {c.case_number} {c.court && `• ${c.court}`}</div>
           </div>
           {isAdmin && (
-            <Select value={c.status} onValueChange={v => updateCase.mutate({ status: v })}>
+            <Select value={c.status} onValueChange={v => updateCase.mutate({ status: v as "active" | "on_hold" | "closed" })}>
               <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="active">Active</SelectItem>
