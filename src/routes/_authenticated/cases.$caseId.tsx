@@ -71,7 +71,7 @@ function CaseDetail() {
   const assignedProfiles = (profiles.data ?? []).filter(p => (assignments.data ?? []).some(a => a.user_id === p.id));
 
   const updateCase = useMutation({
-    mutationFn: async (patch: Record<string, unknown>) => {
+    mutationFn: async (patch: { status?: "active" | "on_hold" | "closed" }) => {
       const { error } = await supabase.from("cases").update(patch).eq("id", caseId);
       if (error) throw error;
     },
