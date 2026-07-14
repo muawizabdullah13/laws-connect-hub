@@ -10,7 +10,7 @@ function AuthCallback() {
 
   useEffect(() => {
     async function finishSignIn() {
-      const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      const { data, error } = await supabase.auth.getSession();
       if (error || !data.session) {
         toast.error(error?.message ?? "Google sign-in failed");
         navigate({ to: "/auth", replace: true });
