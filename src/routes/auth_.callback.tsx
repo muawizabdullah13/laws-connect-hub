@@ -11,21 +11,34 @@ function AuthCallback() {
   useEffect(() => {
     async function finishSignIn() {
       const href = window.location.href;
-      const hasCode = href.includes("code=");
 
-      if (!hasCode) {
-        setErrorDetail(`No "code" parameter found in the URL Google/Supabase redirected to. Full URL was: ${href}`);
+      // Case 1: Supabase returned tokens directly in the URL hash (#access_token=...)
+      const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+      const access_token = hashParams.get("access_token");
+      const refresh_token = hashParams.get("refresh_token");
+
+      if (access_token && refresh_token) {
+        const { data, error } = await supabase.auth.setSession({ access_token, refresh_token });
+        if (error || !data.session) {
+          setErrorDetail(error?.message ?? "setSession returned no session and no error.");
+          return;
+        }
+        navigate({ to: "/dashboard", replace: true });
         return;
       }
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(href);
-
-      if (error || !data.session) {
-        setErrorDetail(error?.message ?? "exchangeCodeForSession returned no session and no error.");
+      // Case 2: Supabase returned a PKCE ?code= param instead
+      if (href.includes("code=")) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(href);
+        if (error || !data.session) {
+          setErrorDetail(error?.message ?? "exchangeCodeForSession returned no session and no error.");
+          return;
+        }
+        navigate({ to: "/dashboard", replace: true });
         return;
       }
 
-      navigate({ to: "/dashboard", replace: true });
+      setErrorDetail(`Neither a "code" nor an access_token was found in the URL. Full URL was: ${href}`);
     }
     finishSignIn().catch((e) => setErrorDetail(`Unexpected exception: ${e?.message ?? String(e)}`));
   }, [navigate]);
