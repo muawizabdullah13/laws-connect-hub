@@ -42,6 +42,7 @@ export type Database = {
           case_number: string
           client_name: string | null
           client_phone: string | null
+          cms_url: string | null
           court: string | null
           created_at: string
           created_by: string | null
@@ -58,6 +59,7 @@ export type Database = {
           case_number: string
           client_name?: string | null
           client_phone?: string | null
+          cms_url?: string | null
           court?: string | null
           created_at?: string
           created_by?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           case_number?: string
           client_name?: string | null
           client_phone?: string | null
+          cms_url?: string | null
           court?: string | null
           created_at?: string
           created_by?: string | null
