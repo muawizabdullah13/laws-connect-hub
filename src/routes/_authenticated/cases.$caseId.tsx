@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Trash2, MessageCircle as _MC } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, MessageCircle as _MC, ExternalLink } from "lucide-react";
 import { useIsAdmin } from "@/hooks/use-auth";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -109,7 +109,16 @@ function CaseDetail() {
       <Card>
         <CardHeader className="flex flex-row items-start justify-between gap-3">
           <div>
-            <CardTitle className="font-serif text-2xl">{c.title}</CardTitle>
+            <div className="flex items-center gap-2">
+              <CardTitle className="font-serif text-2xl">{c.title}</CardTitle>
+              {c.cms_url && (
+                <a href={c.cms_url} target="_blank" rel="noopener noreferrer" title="Open on court CMS">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 shrink-0">
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </a>
+              )}
+            </div>
             <div className="text-sm text-muted-foreground mt-1">Case No. {c.case_number} {c.court && `• ${c.court}`}</div>
           </div>
           {isAdmin && (
@@ -128,6 +137,18 @@ function CaseDetail() {
           <Info label="Opposing party">{c.opposing_party ?? "—"}</Info>
           <Info label="Stage">{c.stage ?? "—"}</Info>
           <Info label="Next hearing">{c.next_hearing_at ? format(new Date(c.next_hearing_at), "EEE d MMM yyyy, h:mm a") : "Not scheduled"}</Info>
+          <Info label="CMS link">
+            <div className="flex items-center gap-2">
+              {c.cms_url ? (
+                <a href={c.cms_url} target="_blank" rel="noopener noreferrer" className="text-primary underline truncate">
+                  {c.cms_url}
+                </a>
+              ) : (
+                <span className="text-muted-foreground">Not set</span>
+              )}
+              {isAdmin && <EditCmsUrlDialog caseId={caseId} current={c.cms_url} />}
+            </div>
+          </Info>
           {c.notes && <div className="sm:col-span-2"><Info label="Notes"><span className="whitespace-pre-wrap">{c.notes}</span></Info></div>}
         </CardContent>
       </Card>
@@ -221,6 +242,52 @@ function CaseDetail() {
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div><div className="mt-0.5">{children}</div></div>;
+}
+
+function EditCmsUrlDialog({ caseId, current }: { caseId: string; current: string | null }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState(current ?? "");
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("cases").update({ cms_url: url || null }).eq("id", caseId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("CMS link saved");
+      qc.invalidateQueries({ queryKey: ["case", caseId] });
+      qc.invalidateQueries({ queryKey: ["cases"] });
+      setOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setUrl(current ?? ""); }}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="h-6 px-2 text-xs shrink-0">
+          {current ? "Edit" : "Add link"}
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>Court CMS link</DialogTitle></DialogHeader>
+        <div>
+          <Label>Case detail URL</Label>
+          <Input
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder="Paste the DSJ Punjab / court CMS case detail URL"
+          />
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending}>Save</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function AssignDialog({ all, assignedIds, onAssign }: { all: Array<{id:string; full_name:string|null; email:string|null}>; assignedIds: string[]; onAssign: (id:string)=>void }) {
