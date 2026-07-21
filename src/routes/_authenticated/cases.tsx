@@ -105,13 +105,13 @@ function NewCaseDialog() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({
     case_number: "", title: "", court: "", client_name: "", client_phone: "",
-    opposing_party: "", stage: "", notes: "", next_hearing_at: "",
+    opposing_party: "", stage: "", notes: "", next_hearing_at: "", cms_url: "",
   });
 
   const create = useMutation({
     mutationFn: async () => {
       const { data: u } = await supabase.auth.getUser();
-      const payload = { ...form, next_hearing_at: form.next_hearing_at || null, created_by: u.user?.id ?? null };
+      const payload = { ...form, next_hearing_at: form.next_hearing_at || null, cms_url: form.cms_url || null, created_by: u.user?.id ?? null };
       const { error, data } = await supabase.from("cases").insert(payload).select("id").single();
       if (error) throw error;
       return data;
@@ -120,7 +120,7 @@ function NewCaseDialog() {
       toast.success("Case created");
       qc.invalidateQueries({ queryKey: ["cases"] });
       setOpen(false);
-      setForm({ case_number: "", title: "", court: "", client_name: "", client_phone: "", opposing_party: "", stage: "", notes: "", next_hearing_at: "" });
+      setForm({ case_number: "", title: "", court: "", client_name: "", client_phone: "", opposing_party: "", stage: "", notes: "", next_hearing_at: "", cms_url: "" });
     },
     onError: (e: Error) => toast.error(e.message),
   });
@@ -141,6 +141,16 @@ function NewCaseDialog() {
           <Field label="Client phone"><Input value={form.client_phone} onChange={e=>setForm({...form, client_phone: e.target.value})} /></Field>
           <Field label="Opposing party"><Input value={form.opposing_party} onChange={e=>setForm({...form, opposing_party: e.target.value})} /></Field>
           <Field label="Stage"><Input value={form.stage} onChange={e=>setForm({...form, stage: e.target.value})} placeholder="e.g. Evidence, Arguments" /></Field>
+          <div className="sm:col-span-2">
+            <Field label="CMS case link (optional)">
+              <Input
+                type="url"
+                value={form.cms_url}
+                onChange={e=>setForm({...form, cms_url: e.target.value})}
+                placeholder="Paste the DSJ Punjab / court CMS case detail URL"
+              />
+            </Field>
+          </div>
           <div className="sm:col-span-2"><Label>Notes</Label><Textarea value={form.notes} onChange={e=>setForm({...form, notes: e.target.value})} rows={3} /></div>
         </div>
         <DialogFooter>
