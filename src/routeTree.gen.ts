@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
+import { Route as AuthenticatedFccJudgmentsRouteImport } from './routes/_authenticated/fcc-judgments'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCasesRouteImport } from './routes/_authenticated/cases'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
@@ -44,6 +45,12 @@ const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedFccJudgmentsRoute =
+  AuthenticatedFccJudgmentsRouteImport.update({
+    id: '/fcc-judgments',
+    path: '/fcc-judgments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -78,6 +85,7 @@ export interface FileRoutesByFullPath {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cases': typeof AuthenticatedCasesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
@@ -89,6 +97,7 @@ export interface FileRoutesByTo {
   '/calendar': typeof AuthenticatedCalendarRoute
   '/cases': typeof AuthenticatedCasesRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
@@ -102,6 +111,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
   '/_authenticated/cases': typeof AuthenticatedCasesRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/auth_/callback': typeof AuthCallbackRoute
   '/_authenticated/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cases'
     | '/dashboard'
+    | '/fcc-judgments'
     | '/tasks'
     | '/auth/callback'
     | '/cases/$caseId'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '/calendar'
     | '/cases'
     | '/dashboard'
+    | '/fcc-judgments'
     | '/tasks'
     | '/auth/callback'
     | '/cases/$caseId'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calendar'
     | '/_authenticated/cases'
     | '/_authenticated/dashboard'
+    | '/_authenticated/fcc-judgments'
     | '/_authenticated/tasks'
     | '/auth_/callback'
     | '/_authenticated/cases/$caseId'
@@ -185,6 +198,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof AuthenticatedTasksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/fcc-judgments': {
+      id: '/_authenticated/fcc-judgments'
+      path: '/fcc-judgments'
+      fullPath: '/fcc-judgments'
+      preLoaderRoute: typeof AuthenticatedFccJudgmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
@@ -241,6 +261,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
   AuthenticatedCasesRoute: typeof AuthenticatedCasesRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFccJudgmentsRoute: typeof AuthenticatedFccJudgmentsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
 }
 
@@ -249,6 +270,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
   AuthenticatedCasesRoute: AuthenticatedCasesRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFccJudgmentsRoute: AuthenticatedFccJudgmentsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
 }
 
