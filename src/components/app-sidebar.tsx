@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Briefcase, Calendar, Users, CheckSquare, Scale } from "lucide-react";
+import { LayoutDashboard, Briefcase, Calendar, Users, CheckSquare, Scale, Gavel } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, useSidebar,
@@ -11,6 +11,7 @@ const items = [
   { title: "Cause List", url: "/calendar", icon: Calendar },
   { title: "Tasks", url: "/tasks", icon: CheckSquare },
   { title: "Associates", url: "/associates", icon: Users },
+  { title: "FCC Judgments", url: "/fcc-judgments", icon: Gavel },
 ] as const;
 
 export function AppSidebar({ isAdmin: _isAdmin }: { isAdmin: boolean }) {
