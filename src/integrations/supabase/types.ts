@@ -132,6 +132,33 @@ export type Database = {
           },
         ]
       }
+      fcc_judgments: {
+        Row: {
+          author_judge: string | null
+          case_title: string
+          download_url: string
+          first_seen_at: string
+          id: string
+          upload_date: string
+        }
+        Insert: {
+          author_judge?: string | null
+          case_title: string
+          download_url: string
+          first_seen_at?: string
+          id?: string
+          upload_date: string
+        }
+        Update: {
+          author_judge?: string | null
+          case_title?: string
+          download_url?: string
+          first_seen_at?: string
+          id?: string
+          upload_date?: string
+        }
+        Relationships: []
+      }
       hearings: {
         Row: {
           case_id: string
