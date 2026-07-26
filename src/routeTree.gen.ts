@@ -19,7 +19,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCasesRouteImport } from './routes/_authenticated/cases'
 import { Route as AuthenticatedCalendarRouteImport } from './routes/_authenticated/calendar'
 import { Route as AuthenticatedAssociatesRouteImport } from './routes/_authenticated/associates'
-import { Route as AuthenticatedCasesCaseIdRouteImport } from './routes/_authenticated/cases.$caseId'
+import { Route as AuthenticatedCasesCaseIdRouteImport } from './routes/_authenticated/cases_.$caseId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -73,9 +73,9 @@ const AuthenticatedAssociatesRoute = AuthenticatedAssociatesRouteImport.update({
 } as any)
 const AuthenticatedCasesCaseIdRoute =
   AuthenticatedCasesCaseIdRouteImport.update({
-    id: '/$caseId',
-    path: '/$caseId',
-    getParentRoute: () => AuthenticatedCasesRoute,
+    id: '/cases_/$caseId',
+    path: '/cases/$caseId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -83,7 +83,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/associates': typeof AuthenticatedAssociatesRoute
   '/calendar': typeof AuthenticatedCalendarRoute
-  '/cases': typeof AuthenticatedCasesRouteWithChildren
+  '/cases': typeof AuthenticatedCasesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -95,7 +95,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/associates': typeof AuthenticatedAssociatesRoute
   '/calendar': typeof AuthenticatedCalendarRoute
-  '/cases': typeof AuthenticatedCasesRouteWithChildren
+  '/cases': typeof AuthenticatedCasesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
   '/tasks': typeof AuthenticatedTasksRoute
@@ -109,12 +109,12 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/associates': typeof AuthenticatedAssociatesRoute
   '/_authenticated/calendar': typeof AuthenticatedCalendarRoute
-  '/_authenticated/cases': typeof AuthenticatedCasesRouteWithChildren
+  '/_authenticated/cases': typeof AuthenticatedCasesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/auth_/callback': typeof AuthCallbackRoute
-  '/_authenticated/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
+  '/_authenticated/cases_/$caseId': typeof AuthenticatedCasesCaseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -153,7 +153,7 @@ export interface FileRouteTypes {
     | '/_authenticated/fcc-judgments'
     | '/_authenticated/tasks'
     | '/auth_/callback'
-    | '/_authenticated/cases/$caseId'
+    | '/_authenticated/cases_/$caseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -235,43 +235,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAssociatesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/cases/$caseId': {
-      id: '/_authenticated/cases/$caseId'
-      path: '/$caseId'
+    '/_authenticated/cases_/$caseId': {
+      id: '/_authenticated/cases_/$caseId'
+      path: '/cases/$caseId'
       fullPath: '/cases/$caseId'
       preLoaderRoute: typeof AuthenticatedCasesCaseIdRouteImport
-      parentRoute: typeof AuthenticatedCasesRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
-interface AuthenticatedCasesRouteChildren {
-  AuthenticatedCasesCaseIdRoute: typeof AuthenticatedCasesCaseIdRoute
-}
-
-const AuthenticatedCasesRouteChildren: AuthenticatedCasesRouteChildren = {
-  AuthenticatedCasesCaseIdRoute: AuthenticatedCasesCaseIdRoute,
-}
-
-const AuthenticatedCasesRouteWithChildren =
-  AuthenticatedCasesRoute._addFileChildren(AuthenticatedCasesRouteChildren)
-
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAssociatesRoute: typeof AuthenticatedAssociatesRoute
   AuthenticatedCalendarRoute: typeof AuthenticatedCalendarRoute
-  AuthenticatedCasesRoute: typeof AuthenticatedCasesRouteWithChildren
+  AuthenticatedCasesRoute: typeof AuthenticatedCasesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFccJudgmentsRoute: typeof AuthenticatedFccJudgmentsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
+  AuthenticatedCasesCaseIdRoute: typeof AuthenticatedCasesCaseIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAssociatesRoute: AuthenticatedAssociatesRoute,
   AuthenticatedCalendarRoute: AuthenticatedCalendarRoute,
-  AuthenticatedCasesRoute: AuthenticatedCasesRouteWithChildren,
+  AuthenticatedCasesRoute: AuthenticatedCasesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFccJudgmentsRoute: AuthenticatedFccJudgmentsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
+  AuthenticatedCasesCaseIdRoute: AuthenticatedCasesCaseIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
