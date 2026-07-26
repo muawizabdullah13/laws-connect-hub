@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ChangeEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Trash2, MessageCircle as _MC, ExternalLink } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, MessageCircle as _MC, ExternalLink, Pencil } from "lucide-react";
 import { useIsAdmin } from "@/hooks/use-auth";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -119,22 +119,26 @@ function CaseDetail() {
                 </a>
               )}
             </div>
-            <div className="text-sm text-muted-foreground mt-1">Case No. {c.case_number} {c.court && `• ${c.court}`}</div>
+            <div className="text-sm text-muted-foreground mt-1">{c.case_number ? `Case No. ${c.case_number}` : "Case No. not set"} {c.court && `• ${c.court}`}</div>
           </div>
           {isAdmin && (
-            <Select value={c.status} onValueChange={v => updateCase.mutate({ status: v as "active" | "on_hold" | "closed" })}>
-              <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="on_hold">On hold</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <EditCaseDialog caseId={caseId} current={c} />
+              <Select value={c.status} onValueChange={v => updateCase.mutate({ status: v as "active" | "on_hold" | "closed" })}>
+                <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="on_hold">On hold</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           )}
         </CardHeader>
         <CardContent className="grid sm:grid-cols-2 gap-4 text-sm">
           <Info label="Client">{c.client_name ?? "—"} {c.client_phone && <span className="text-muted-foreground">• {c.client_phone}</span>}</Info>
           <Info label="Opposing party">{c.opposing_party ?? "—"}</Info>
+          <Info label="Case type">{c.case_type ?? "—"}</Info>
           <Info label="Stage">{c.stage ?? "—"}</Info>
           <Info label="Next hearing">{c.next_hearing_at ? format(new Date(c.next_hearing_at), "EEE d MMM yyyy, h:mm a") : "Not scheduled"}</Info>
           <Info label="CMS link">
@@ -242,6 +246,80 @@ function CaseDetail() {
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
   return <div><div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div><div className="mt-0.5">{children}</div></div>;
+}
+
+type EditableCase = {
+  title: string;
+  case_number: string | null;
+  court: string | null;
+  case_type: string | null;
+  client_name: string | null;
+  client_phone: string | null;
+  opposing_party: string | null;
+  stage: string | null;
+  notes: string | null;
+};
+
+function EditCaseDialog({ caseId, current }: { caseId: string; current: EditableCase }) {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [form, setForm] = useState<EditableCase>(current);
+
+  const save = useMutation({
+    mutationFn: async () => {
+      if (!form.title.trim()) throw new Error("Title can't be empty");
+      const { error } = await supabase.from("cases").update({
+        title: form.title,
+        case_number: form.case_number || null,
+        court: form.court || null,
+        case_type: form.case_type || null,
+        client_name: form.client_name || null,
+        client_phone: form.client_phone || null,
+        opposing_party: form.opposing_party || null,
+        stage: form.stage || null,
+        notes: form.notes || null,
+      }).eq("id", caseId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Case details updated");
+      qc.invalidateQueries({ queryKey: ["case", caseId] });
+      qc.invalidateQueries({ queryKey: ["cases"] });
+      setOpen(false);
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const field = (key: keyof EditableCase) => ({
+    value: form[key] ?? "",
+    onChange: (e: ChangeEvent<HTMLInputElement>) => setForm({ ...form, [key]: e.target.value }),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (o) setForm(current); }}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8" title="Edit case details"><Pencil className="h-4 w-4" /></Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>Edit case details</DialogTitle></DialogHeader>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div className="sm:col-span-2"><Label>Title</Label><Input {...field("title")} /></div>
+          <div><Label>Case number</Label><Input {...field("case_number")} /></div>
+          <div><Label>Court</Label><Input {...field("court")} /></div>
+          <div><Label>Case type</Label><Input {...field("case_type")} placeholder="e.g. Suit for Declaration" /></div>
+          <div><Label>Stage</Label><Input {...field("stage")} placeholder="e.g. Evidence, Arguments" /></div>
+          <div><Label>Client name</Label><Input {...field("client_name")} /></div>
+          <div><Label>Client phone</Label><Input {...field("client_phone")} /></div>
+          <div className="sm:col-span-2"><Label>Opposing party</Label><Input {...field("opposing_party")} /></div>
+          <div className="sm:col-span-2"><Label>Notes</Label><Textarea value={form.notes ?? ""} onChange={e => setForm({ ...form, notes: e.target.value })} rows={3} /></div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button onClick={() => save.mutate()} disabled={save.isPending}>Save changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
 }
 
 function EditCmsUrlDialog({ caseId, current }: { caseId: string; current: string | null }) {
