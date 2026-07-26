@@ -16,7 +16,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { WhatsAppDraftButton } from "@/components/whatsapp-draft-button";
 
-export const Route = createFileRoute("/_authenticated/cases/$caseId")({ component: CaseDetail });
+export const Route = createFileRoute("/_authenticated/cases_/$caseId")({ component: CaseDetail });
 
 function CaseDetail() {
   const { caseId } = Route.useParams();
