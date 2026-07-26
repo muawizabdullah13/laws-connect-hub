@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Briefcase, CheckSquare, CalendarClock, AlertTriangle } from "lucide-react";
 import { format, isToday, isPast, startOfDay, endOfDay, addDays } from "date-fns";
 import { Badge } from "@/components/ui/badge";
+import { EnableNotificationsBanner } from "@/components/enable-notifications-banner";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: Dashboard });
 
@@ -53,6 +54,7 @@ function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
+      <EnableNotificationsBanner />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Stat icon={Briefcase} label="Active cases" value={counts.data?.activeCases ?? "—"} />
         <Stat icon={CalendarClock} label="Hearings today" value={todayList.length} />
