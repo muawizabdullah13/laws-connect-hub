@@ -5,7 +5,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useAuth, useIsAdmin } from "@/hooks/use-auth";
-import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -46,7 +45,6 @@ function Layout() {
             <div className="flex items-center gap-3 min-w-0">
               <SidebarTrigger />
               <h1 className="font-serif text-xl truncate">{titles[key]}</h1>
-              {isAdmin === false && <Badge variant="secondary">Read-only</Badge>}
             </div>
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground hidden sm:inline">{user?.email}</span>
