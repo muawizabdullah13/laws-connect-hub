@@ -33,13 +33,6 @@ function FccJudgmentsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-4">
-      <div>
-        <p className="text-sm text-muted-foreground">
-          Checked automatically once a day against the Federal Constitutional Court's own judgments page.
-          The Supreme Court doesn't allow automated checks, so those are still posted manually via the
-          WhatsApp/share feature.
-        </p>
-      </div>
       <Card>
         <CardContent className="p-0">
           {judgments.isLoading ? (
