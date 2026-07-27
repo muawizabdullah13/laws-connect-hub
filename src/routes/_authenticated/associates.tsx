@@ -44,7 +44,7 @@ function AssociatesPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-4">
       <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">Anyone who signs up appears here. The first signup is the admin; the rest are read-only associates.</p>
+        <p className="text-sm text-muted-foreground">Everyone at the chambers who has signed in appears here.</p>
       </div>
       <Card>
         <CardContent className="p-0">
