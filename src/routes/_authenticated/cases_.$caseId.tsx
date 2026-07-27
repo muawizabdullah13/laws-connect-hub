@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowLeft, Plus, Trash2, MessageCircle as _MC, ExternalLink, Pencil } from "lucide-react";
-import { useIsAdmin } from "@/hooks/use-auth";
+import { useAuth, useIsAdmin } from "@/hooks/use-auth";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { WhatsAppDraftButton } from "@/components/whatsapp-draft-button";
@@ -22,6 +22,7 @@ function CaseDetail() {
   const { caseId } = Route.useParams();
   const qc = useQueryClient();
   const { data: isAdmin } = useIsAdmin();
+  const { user } = useAuth();
 
   const caseQ = useQuery({
     queryKey: ["case", caseId],
@@ -69,6 +70,8 @@ function CaseDetail() {
   });
 
   const assignedProfiles = (profiles.data ?? []).filter(p => (assignments.data ?? []).some(a => a.user_id === p.id));
+  const isAssignedToThisCase = (assignments.data ?? []).some(a => a.user_id === user?.id);
+  const canEdit = isAdmin || isAssignedToThisCase;
 
   const updateCase = useMutation({
     mutationFn: async (patch: { status?: "active" | "on_hold" | "closed" }) => {
@@ -121,7 +124,7 @@ function CaseDetail() {
             </div>
             <div className="text-sm text-muted-foreground mt-1">{c.case_number ? `Case No. ${c.case_number}` : "Case No. not set"} {c.court && `• ${c.court}`}</div>
           </div>
-          {isAdmin && (
+          {canEdit && (
             <div className="flex items-center gap-2">
               <EditCaseDialog caseId={caseId} current={c} />
               <Select value={c.status} onValueChange={v => updateCase.mutate({ status: v as "active" | "on_hold" | "closed" })}>
@@ -150,7 +153,7 @@ function CaseDetail() {
               ) : (
                 <span className="text-muted-foreground">Not set</span>
               )}
-              {isAdmin && <EditCmsUrlDialog caseId={caseId} current={c.cms_url} />}
+              {canEdit && <EditCmsUrlDialog caseId={caseId} current={c.cms_url} />}
             </div>
           </Info>
           {c.notes && <div className="sm:col-span-2"><Info label="Notes"><span className="whitespace-pre-wrap">{c.notes}</span></Info></div>}
@@ -198,7 +201,7 @@ function CaseDetail() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-serif text-lg">Hearings</CardTitle>
-            {isAdmin && <AddHearingDialog caseId={caseId} onSaved={() => { hearings.refetch(); qc.invalidateQueries({ queryKey: ["case", caseId] }); }} />}
+            {canEdit && <AddHearingDialog caseId={caseId} onSaved={() => { hearings.refetch(); qc.invalidateQueries({ queryKey: ["case", caseId] }); }} />}
           </CardHeader>
           <CardContent>
             {(hearings.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No hearings recorded.</p> : (
@@ -221,7 +224,7 @@ function CaseDetail() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-serif text-lg">Tasks on this case</CardTitle>
-            {isAdmin && <AddTaskDialog caseId={caseId} profiles={profiles.data ?? []} onSaved={() => tasks.refetch()} />}
+            {canEdit && <AddTaskDialog caseId={caseId} profiles={profiles.data ?? []} onSaved={() => tasks.refetch()} />}
           </CardHeader>
           <CardContent>
             {(tasks.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No tasks.</p> : (
