@@ -70,7 +70,6 @@ function AuthPage() {
               <div><Label>Email</Label><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} /></div>
               <div><Label>Password</Label><Input type="password" value={password} onChange={e=>setPassword(e.target.value)} /></div>
               <Button className="w-full" disabled={loading} onClick={signUp}>Create account</Button>
-              <p className="text-xs text-muted-foreground text-center">The first account becomes the chamber admin. Later sign-ups join as associates (read-only).</p>
             </TabsContent>
           </Tabs>
           <div className="relative my-4">
