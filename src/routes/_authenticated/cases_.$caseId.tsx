@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Trash2, MessageCircle as _MC, ExternalLink, Pencil } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, MessageCircle as _MC, ExternalLink, Pencil, History } from "lucide-react";
 import { useAuth, useIsAdmin } from "@/hooks/use-auth";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -201,23 +201,42 @@ function CaseDetail() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="font-serif text-lg">Hearings</CardTitle>
-            {canEdit && <AddHearingDialog caseId={caseId} onSaved={() => { hearings.refetch(); qc.invalidateQueries({ queryKey: ["case", caseId] }); }} />}
+            <div className="flex items-center gap-1">
+              <HearingHistoryDialog hearings={hearings.data ?? []} />
+              {canEdit && <AddHearingDialog caseId={caseId} onSaved={() => { hearings.refetch(); qc.invalidateQueries({ queryKey: ["case", caseId] }); }} />}
+            </div>
           </CardHeader>
           <CardContent>
-            {(hearings.data ?? []).length === 0 ? <p className="text-sm text-muted-foreground">No hearings recorded.</p> : (
-              <ul className="divide-y">
-                {(hearings.data ?? []).map(h => (
-                  <li key={h.id} className="py-2 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{format(new Date(h.scheduled_at), "EEE d MMM, h:mm a")}</span>
-                      {h.court && <span className="text-xs text-muted-foreground">{h.court}</span>}
-                    </div>
-                    {h.purpose && <div className="text-xs text-muted-foreground mt-0.5">{h.purpose}</div>}
-                    {h.outcome && <div className="text-xs mt-1">Outcome: {h.outcome}</div>}
-                  </li>
-                ))}
-              </ul>
-            )}
+            {(() => {
+              const now = new Date();
+              const sorted = [...(hearings.data ?? [])].sort((a, b) => new Date(a.scheduled_at).getTime() - new Date(b.scheduled_at).getTime());
+              const past = sorted.filter(h => new Date(h.scheduled_at) <= now);
+              const future = sorted.filter(h => new Date(h.scheduled_at) > now);
+              const previousHearing = past[past.length - 1];
+              const nextHearing = future[0];
+              return (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-md border p-3">
+                    <div className="text-xs text-muted-foreground mb-1">Previous date</div>
+                    {previousHearing ? (
+                      <>
+                        <div className="font-medium">{format(new Date(previousHearing.scheduled_at), "d MMM yyyy")}</div>
+                        {previousHearing.court && <div className="text-xs text-muted-foreground mt-0.5">{previousHearing.court}</div>}
+                      </>
+                    ) : <div className="text-sm text-muted-foreground">—</div>}
+                  </div>
+                  <div className={`rounded-md border p-3 ${!nextHearing ? "border-dashed border-primary bg-primary/5" : ""}`}>
+                    <div className="text-xs text-muted-foreground mb-1">Next date</div>
+                    {nextHearing ? (
+                      <>
+                        <div className="font-medium">{format(new Date(nextHearing.scheduled_at), "d MMM yyyy")}</div>
+                        {nextHearing.court && <div className="text-xs text-muted-foreground mt-0.5">{nextHearing.court}</div>}
+                      </>
+                    ) : <div className="text-sm text-primary">Add next date</div>}
+                  </div>
+                </div>
+              );
+            })()}
           </CardContent>
         </Card>
 
@@ -394,20 +413,56 @@ function AssignDialog({ all, assignedIds, onAssign }: { all: Array<{id:string; f
   );
 }
 
+type HearingRow = { id: string; scheduled_at: string; court: string | null; purpose: string | null; outcome: string | null };
+
+function HearingHistoryDialog({ hearings }: { hearings: HearingRow[] }) {
+  const [open, setOpen] = useState(false);
+  const sorted = [...hearings].sort((a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime());
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" className="h-8 w-8" title="All hearing dates"><History className="h-4 w-4" /></Button>
+      </DialogTrigger>
+      <DialogContent className="max-h-[80vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>All hearing dates</DialogTitle></DialogHeader>
+        {sorted.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No hearings recorded.</p>
+        ) : (
+          <ul className="divide-y">
+            {sorted.map(h => (
+              <li key={h.id} className="py-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium">{format(new Date(h.scheduled_at), "EEE d MMM yyyy")}</span>
+                  {h.court && <span className="text-xs text-muted-foreground">{h.court}</span>}
+                </div>
+                {h.purpose && <div className="text-xs text-muted-foreground mt-0.5">{h.purpose}</div>}
+                {h.outcome && <div className="text-xs mt-1">Outcome: {h.outcome}</div>}
+              </li>
+            ))}
+          </ul>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function AddHearingDialog({ caseId, onSaved }: { caseId: string; onSaved: () => void }) {
   const [open, setOpen] = useState(false);
-  const [form, setForm] = useState({ scheduled_at: "", court: "", purpose: "", outcome: "" });
+  const [form, setForm] = useState({ date: "", court: "", purpose: "", outcome: "" });
   const save = useMutation({
     mutationFn: async () => {
-      if (!form.scheduled_at) throw new Error("Pick a date and time");
-      const { error } = await supabase.from("hearings").insert({ case_id: caseId, scheduled_at: new Date(form.scheduled_at).toISOString(), court: form.court || null, purpose: form.purpose || null, outcome: form.outcome || null });
+      if (!form.date) throw new Error("Pick a date");
+      // Time isn't shown in the UI (dates only matter for cause-list purposes),
+      // but scheduled_at is still stored as a full timestamp under a fixed
+      // default time, so nothing else touching this column needs to change.
+      const scheduled_at = new Date(`${form.date}T09:00:00`).toISOString();
+      const { error } = await supabase.from("hearings").insert({ case_id: caseId, scheduled_at, court: form.court || null, purpose: form.purpose || null, outcome: form.outcome || null });
       if (error) throw error;
-      // also update next_hearing on case if future
-      if (new Date(form.scheduled_at) > new Date()) {
-        await supabase.from("cases").update({ next_hearing_at: new Date(form.scheduled_at).toISOString() }).eq("id", caseId);
+      if (new Date(scheduled_at) > new Date()) {
+        await supabase.from("cases").update({ next_hearing_at: scheduled_at }).eq("id", caseId);
       }
     },
-    onSuccess: () => { toast.success("Hearing added"); setOpen(false); setForm({ scheduled_at: "", court: "", purpose: "", outcome: "" }); onSaved(); },
+    onSuccess: () => { toast.success("Hearing added"); setOpen(false); setForm({ date: "", court: "", purpose: "", outcome: "" }); onSaved(); },
     onError: (e: Error) => toast.error(e.message),
   });
   return (
@@ -416,7 +471,7 @@ function AddHearingDialog({ caseId, onSaved }: { caseId: string; onSaved: () => 
       <DialogContent>
         <DialogHeader><DialogTitle>Add hearing</DialogTitle></DialogHeader>
         <div className="space-y-3">
-          <div><Label>Date & time</Label><Input type="datetime-local" value={form.scheduled_at} onChange={e=>setForm({...form, scheduled_at: e.target.value})} /></div>
+          <div><Label>Date</Label><Input type="date" value={form.date} onChange={e=>setForm({...form, date: e.target.value})} /></div>
           <div><Label>Court</Label><Input value={form.court} onChange={e=>setForm({...form, court: e.target.value})} /></div>
           <div><Label>Purpose</Label><Input value={form.purpose} onChange={e=>setForm({...form, purpose: e.target.value})} placeholder="e.g. Cross-examination" /></div>
           <div><Label>Outcome (if past)</Label><Textarea value={form.outcome} onChange={e=>setForm({...form, outcome: e.target.value})} rows={2} /></div>
