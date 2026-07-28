@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthCallbackRouteImport } from './routes/auth_.callback'
 import { Route as AuthenticatedTasksRouteImport } from './routes/_authenticated/tasks'
+import { Route as AuthenticatedScJudgmentsRouteImport } from './routes/_authenticated/sc-judgments'
 import { Route as AuthenticatedFccJudgmentsRouteImport } from './routes/_authenticated/fcc-judgments'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCasesRouteImport } from './routes/_authenticated/cases'
@@ -45,6 +46,12 @@ const AuthenticatedTasksRoute = AuthenticatedTasksRouteImport.update({
   path: '/tasks',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedScJudgmentsRoute =
+  AuthenticatedScJudgmentsRouteImport.update({
+    id: '/sc-judgments',
+    path: '/sc-judgments',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFccJudgmentsRoute =
   AuthenticatedFccJudgmentsRouteImport.update({
     id: '/fcc-judgments',
@@ -86,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/cases': typeof AuthenticatedCasesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
+  '/sc-judgments': typeof AuthenticatedScJudgmentsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
@@ -98,6 +106,7 @@ export interface FileRoutesByTo {
   '/cases': typeof AuthenticatedCasesRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
+  '/sc-judgments': typeof AuthenticatedScJudgmentsRoute
   '/tasks': typeof AuthenticatedTasksRoute
   '/auth/callback': typeof AuthCallbackRoute
   '/cases/$caseId': typeof AuthenticatedCasesCaseIdRoute
@@ -112,6 +121,7 @@ export interface FileRoutesById {
   '/_authenticated/cases': typeof AuthenticatedCasesRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/fcc-judgments': typeof AuthenticatedFccJudgmentsRoute
+  '/_authenticated/sc-judgments': typeof AuthenticatedScJudgmentsRoute
   '/_authenticated/tasks': typeof AuthenticatedTasksRoute
   '/auth_/callback': typeof AuthCallbackRoute
   '/_authenticated/cases_/$caseId': typeof AuthenticatedCasesCaseIdRoute
@@ -126,6 +136,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/dashboard'
     | '/fcc-judgments'
+    | '/sc-judgments'
     | '/tasks'
     | '/auth/callback'
     | '/cases/$caseId'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
     | '/cases'
     | '/dashboard'
     | '/fcc-judgments'
+    | '/sc-judgments'
     | '/tasks'
     | '/auth/callback'
     | '/cases/$caseId'
@@ -151,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cases'
     | '/_authenticated/dashboard'
     | '/_authenticated/fcc-judgments'
+    | '/_authenticated/sc-judgments'
     | '/_authenticated/tasks'
     | '/auth_/callback'
     | '/_authenticated/cases_/$caseId'
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       path: '/tasks'
       fullPath: '/tasks'
       preLoaderRoute: typeof AuthenticatedTasksRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sc-judgments': {
+      id: '/_authenticated/sc-judgments'
+      path: '/sc-judgments'
+      fullPath: '/sc-judgments'
+      preLoaderRoute: typeof AuthenticatedScJudgmentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/fcc-judgments': {
@@ -251,6 +271,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCasesRoute: typeof AuthenticatedCasesRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFccJudgmentsRoute: typeof AuthenticatedFccJudgmentsRoute
+  AuthenticatedScJudgmentsRoute: typeof AuthenticatedScJudgmentsRoute
   AuthenticatedTasksRoute: typeof AuthenticatedTasksRoute
   AuthenticatedCasesCaseIdRoute: typeof AuthenticatedCasesCaseIdRoute
 }
@@ -261,6 +282,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCasesRoute: AuthenticatedCasesRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFccJudgmentsRoute: AuthenticatedFccJudgmentsRoute,
+  AuthenticatedScJudgmentsRoute: AuthenticatedScJudgmentsRoute,
   AuthenticatedTasksRoute: AuthenticatedTasksRoute,
   AuthenticatedCasesCaseIdRoute: AuthenticatedCasesCaseIdRoute,
 }
