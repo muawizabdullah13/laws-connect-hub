@@ -5,10 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useState } from "react";
-import { addWeeks, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek, getWeek } from "date-fns";
+import { addWeeks, eachDayOfInterval, endOfWeek, format, isSameDay, startOfWeek } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/calendar")({ component: CalendarPage });
+
+function weekOfMonth(date: Date) {
+  return Math.min(4, Math.ceil(date.getDate() / 7));
+}
 
 type HearingWithCase = {
   id: string;
