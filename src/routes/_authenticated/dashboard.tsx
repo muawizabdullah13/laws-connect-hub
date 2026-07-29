@@ -78,7 +78,7 @@ function Dashboard() {
                       {(h.cases as { case_number: string } | null)?.case_number} • {h.court ?? "—"} • {h.purpose ?? ""}
                     </div>
                   </div>
-                  <div className="text-sm font-medium text-primary tabular-nums">{format(new Date(h.scheduled_at), "h:mm a")}</div>
+                  <div className="text-sm font-medium text-primary">{h.court ?? "Today"}</div>
                 </li>
               ))}
             </ul>
@@ -97,7 +97,7 @@ function Dashboard() {
                     <Link to="/cases/$caseId" params={{ caseId: h.case_id }} className="truncate hover:underline">
                       {(h.cases as { title: string } | null)?.title}
                     </Link>
-                    <span className="text-muted-foreground tabular-nums">{format(new Date(h.scheduled_at), "EEE d MMM, h:mm a")}</span>
+                    <span className="text-muted-foreground tabular-nums">{format(new Date(h.scheduled_at), "EEE d MMM")}</span>
                   </li>
                 ))}
               </ul>
