@@ -80,7 +80,7 @@ function CasesPage() {
                       </div>
                     </div>
                     <div className="text-sm tabular-nums text-primary">
-                      {c.next_hearing_at ? format(new Date(c.next_hearing_at), "EEE, d MMM • h:mm a") : "No hearing set"}
+                     {c.next_hearing_at ? format(new Date(c.next_hearing_at), "EEE, d MMM yyyy") : "No hearing set"}
                     </div>
                   </Link>
                 </li>
@@ -257,10 +257,18 @@ function NewCaseDialog() {
 
   const create = useMutation({
     mutationFn: async () => {
+      if (!form.title.trim()) throw new Error("Title is required");
+      if (!form.court.trim()) throw new Error("Court / Forum is required");
+      if (!form.next_hearing_at) throw new Error("Next hearing date is required");
       const { data: u } = await supabase.auth.getUser();
-      const payload = { ...form, next_hearing_at: form.next_hearing_at ? new Date(form.next_hearing_at).toISOString() : null, cms_url: form.cms_url || null, created_by: u.user?.id ?? null };
+      const next_hearing_at = new Date(`${form.next_hearing_at}T09:00:00`).toISOString();
+      const payload = { ...form, case_number: form.case_number || null, next_hearing_at, cms_url: form.cms_url || null, created_by: u.user?.id ?? null };
       const { error, data } = await supabase.from("cases").insert(payload).select("id").single();
       if (error) throw error;
+
+      if (data?.id) {
+        await supabase.from("hearings").insert({ case_id: data.id, scheduled_at: next_hearing_at, court: form.court || null });
+      }
       return data;
     },
     onSuccess: () => {
@@ -280,11 +288,10 @@ function NewCaseDialog() {
       <DialogContent className="max-w-2xl">
         <DialogHeader><DialogTitle className="font-serif">Add a case</DialogTitle></DialogHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Field label="Case number"><Input value={form.case_number} onChange={e=>setForm({...form, case_number: e.target.value})} /></Field>
-          <Field label="Title"><Input value={form.title} onChange={e=>setForm({...form, title: e.target.value})} placeholder="e.g. A vs B" /></Field>
-          <Field label="Court / Forum"><Input value={form.court} onChange={e=>setForm({...form, court: e.target.value})} /></Field>
-          <Field label="Next hearing"><Input type="datetime-local" value={form.next_hearing_at} onChange={e=>setForm({...form, next_hearing_at: e.target.value})} /></Field>
-          <Field label="Client name"><Input value={form.client_name} onChange={e=>setForm({...form, client_name: e.target.value})} /></Field>
+          <Field label="Title *"><Input value={form.title} onChange={e=>setForm({...form, title: e.target.value})} placeholder="e.g. A vs B" /></Field>
+          <Field label="Court / Forum *"><Input value={form.court} onChange={e=>setForm({...form, court: e.target.value})} /></Field>
+          <Field label="Next hearing *"><Input type="date" value={form.next_hearing_at} onChange={e=>setForm({...form, next_hearing_at: e.target.value})} /></Field>
+          <Field label="Case number (optional)"><Input value={form.case_number} onChange={e=>setForm({...form, case_number: e.target.value})} /></Field>          <Field label="Client name"><Input value={form.client_name} onChange={e=>setForm({...form, client_name: e.target.value})} /></Field>
           <Field label="Client phone"><Input value={form.client_phone} onChange={e=>setForm({...form, client_phone: e.target.value})} /></Field>
           <Field label="Opposing party"><Input value={form.opposing_party} onChange={e=>setForm({...form, opposing_party: e.target.value})} /></Field>
           <Field label="Stage"><Input value={form.stage} onChange={e=>setForm({...form, stage: e.target.value})} placeholder="e.g. Evidence, Arguments" /></Field>
