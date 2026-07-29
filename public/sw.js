@@ -14,8 +14,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(payload.title, {
       body: payload.body,
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
       data: { url: payload.url || "/" },
     }),
   );
@@ -25,16 +25,8 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const targetUrl = event.notification.data?.url || "/";
 
-  event.waitUntil(
-    (async () => {
-      const allClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
-      const existing = allClients.find((c) => c.url.includes(self.location.origin));
-      if (existing) {
-        existing.focus();
-        existing.navigate(targetUrl);
-      } else {
-        clients.openWindow(targetUrl);
-      }
-    })(),
-  );
+  // Always open a fresh tab for the linked judgment, rather than navigating
+  // an already-open ZLC Digital tab away from wherever the person was in
+  // the app — so tapping a notification never loses their place.
+  event.waitUntil(clients.openWindow(targetUrl));
 });
