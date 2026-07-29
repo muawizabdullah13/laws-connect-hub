@@ -143,12 +143,10 @@ function CaseDetail() {
           <Info label="Opposing party">{c.opposing_party ?? "—"}</Info>
           <Info label="Case type">{c.case_type ?? "—"}</Info>
           <Info label="Stage">{c.stage ?? "—"}</Info>
-          <Info label="Next hearing">{c.next_hearing_at ? format(new Date(c.next_hearing_at), "EEE d MMM yyyy, h:mm a") : "Not scheduled"}</Info>
-          <Info label="CMS link">
+          <Info label="Next hearing">{c.next_hearing_at ? format(new Date(c.next_hearing_at), "EEE d MMM yyyy") : "Not scheduled"}</Info>          <Info label="CMS link">
             <div className="flex items-center gap-2">
               {c.cms_url ? (
-                <a href={c.cms_url} target="_blank" rel="noopener noreferrer" className="text-primary underline truncate">
-                  {c.cms_url}
+                <a href={c.cms_url} target="_blank" rel="noopener noreferrer" className="text-primary underline truncate">                  {c.cms_url}
                 </a>
               ) : (
                 <span className="text-muted-foreground">Not set</span>
@@ -267,7 +265,7 @@ function CaseDetail() {
 }
 
 function Info({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div><div className="mt-0.5">{children}</div></div>;
+ return <div className="min-w-0"><div className="text-xs uppercase tracking-wider text-muted-foreground">{label}</div><div className="mt-0.5 min-w-0">{children}</div></div>;
 }
 
 type EditableCase = {
