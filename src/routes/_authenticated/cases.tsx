@@ -309,7 +309,7 @@ function NewCaseDialog() {
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={()=>setOpen(false)}>Cancel</Button>
-          <Button disabled={!form.title || !form.case_number || create.isPending} onClick={()=>create.mutate()}>Create</Button>
+          <Button disabled={!form.title || !form.court || !form.next_hearing_at || create.isPending} onClick={()=>create.mutate()}>Create</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
