@@ -52,9 +52,9 @@ function CalendarPage() {
         <CardHeader className="flex flex-row items-center justify-between py-3">
           <Button variant="ghost" size="icon" onClick={() => setWeekStart(addWeeks(weekStart, -1))}><ChevronLeft className="h-4 w-4" /></Button>
           <div className="text-center">
-            <CardTitle className="font-serif text-lg">Week {getWeek(weekStart, { weekStartsOn: 1 })}</CardTitle>
-            <div className="text-xs text-muted-foreground">{format(weekStart, "d MMM")} – {format(weekEnd, "d MMM yyyy")}</div>
-          </div>
+            <CardTitle className="font-serif text-lg">{format(weekStart, "MMMM")}</CardTitle>
+            <div className="text-sm text-muted-foreground">Week {weekOfMonth(weekStart)}</div>
+            <div className="text-xs text-muted-foreground">{format(weekStart, "d MMM")} – {format(weekEnd, "d MMM yyyy")}</div>          </div>
           <Button variant="ghost" size="icon" onClick={() => setWeekStart(addWeeks(weekStart, 1))}><ChevronRight className="h-4 w-4" /></Button>
         </CardHeader>
       </Card>
