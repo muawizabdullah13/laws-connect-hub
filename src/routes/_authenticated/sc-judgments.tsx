@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Gavel, ExternalLink, Plus, Share2 } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/sc-judgments")({ component: ScJudgmentsPage });
@@ -115,10 +115,15 @@ function PostJudgmentDialog({ prefill, onConsumedPrefill }: { prefill: { title: 
 
   const post = useMutation({
     mutationFn: async () => {
-      if (!form.title.trim() || !form.url.trim()) throw new Error("Title and link are both required");
+      if (!form.url.trim()) throw new Error("A link is required");
+      // Title isn't required from the person posting — SC's site blocks
+      // automated fetching, so we can't pull a real title from the link
+      // itself; fall back to the citation, or a dated placeholder, so
+      // sharing straight from the browser never gets blocked on this.
+      const title = form.title.trim() || form.citation.trim() || `Supreme Court judgment — ${format(new Date(), "d MMM yyyy")}`;
       const { data: u } = await supabase.auth.getUser();
       const { error } = await supabase.from("sc_judgments").insert({
-        title: form.title.trim(),
+        title,
         citation: form.citation.trim() || null,
         url: form.url.trim(),
         posted_by: u.user?.id ?? null,
@@ -146,7 +151,7 @@ function PostJudgmentDialog({ prefill, onConsumedPrefill }: { prefill: { title: 
           Tip: on the SC site, use your phone's Share button and pick ZLC Digital — the link fills in automatically.
         </p>
         <div className="space-y-3">
-          <div><Label>Case title</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Muhammad Ali v. State" /></div>
+          <div><Label>Case title (optional)</Label><Input value={form.title} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Muhammad Ali v. State — leave blank if you're in a hurry" /></div>
           <div><Label>Citation (optional)</Label><Input value={form.citation} onChange={e => setForm({ ...form, citation: e.target.value })} placeholder="e.g. PLD 2026 SC 123" /></div>
           <div><Label>Link</Label><Input type="url" value={form.url} onChange={e => setForm({ ...form, url: e.target.value })} placeholder="Paste the judgment link from the SC site" /></div>
         </div>
