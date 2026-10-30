@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
-import { Pencil, Phone, Mail, UserPlus } from "lucide-react";
-import { useIsAdmin } from "@/hooks/use-auth";
+import { Pencil, Phone, Mail, UserPlus, ShieldCheck, ShieldOff } from "lucide-react";
+import { useAuth, useIsAdmin } from "@/hooks/use-auth";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -39,6 +39,32 @@ function AssociatesPage() {
     },
   });
 
+    const { user } = useAuth();
+  const editors = useQuery({
+    queryKey: ["editor-access-all"],
+    enabled: !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("editor_access").select("user_id");
+      if (error) throw error;
+      return (data ?? []).map(r => r.user_id);
+    },
+  });
+  const toggleEdit = useMutation({
+    mutationFn: async ({ id, grant }: { id: string; grant: boolean }) => {
+      if (grant) {
+        const { error } = await supabase.from("editor_access").insert({ user_id: id, granted_by: user?.id ?? null });
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("editor_access").delete().eq("user_id", id);
+        if (error) throw error;
+      }
+    },
+    onSuccess: (_d, v) => {
+      toast.success(v.grant ? "Edit access granted" : "Edit access removed");
+      qc.invalidateQueries({ queryKey: ["editor-access-all"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
   const roleOf = (id: string) => (roles.data ?? []).find(r => r.user_id === id)?.role ?? "associate";
 
   return (
