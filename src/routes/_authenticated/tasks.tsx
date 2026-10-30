@@ -21,7 +21,9 @@ export const Route = createFileRoute("/_authenticated/tasks")({ component: Tasks
 type Filter = "all" | "open" | "done" | "overdue";
 
 function TasksPage() {
-  const { data: isAdmin } = useIsAdmin();
+    const { data: isAdmin } = useIsAdmin();
+  const { data: hasEditAccess } = useHasEditAccess();
+  const canEditTasks = !!(isAdmin || hasEditAccess);
   const qc = useQueryClient();
   const [filter, setFilter] = useState<Filter>("open");
 
@@ -73,8 +75,8 @@ function TasksPage() {
                   <li key={t.id} className="p-3 flex items-center gap-3">
                     <Checkbox
                       checked={t.status === "done"}
-                      onCheckedChange={(v) => isAdmin && toggle.mutate({ id: t.id, done: !!v })}
-                      disabled={!isAdmin}
+                                            onCheckedChange={(v) => canEditTasks && toggle.mutate({ id: t.id, done: !!v })}
+                      disabled={!canEditTasks}
                     />
                     <div className="min-w-0 flex-1">
                       <div className={"truncate " + (t.status === "done" ? "line-through text-muted-foreground" : "")}>{t.title}</div>
