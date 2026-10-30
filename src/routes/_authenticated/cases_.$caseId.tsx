@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ArrowLeft, Plus, Trash2, MessageCircle as _MC, ExternalLink, Pencil, History } from "lucide-react";
-import { useAuth, useIsAdmin } from "@/hooks/use-auth";
+import { useAuth, useIsAdmin, useHasEditAccess } from "@/hooks/use-auth";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { WhatsAppDraftButton } from "@/components/whatsapp-draft-button";
