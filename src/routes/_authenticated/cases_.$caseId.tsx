@@ -21,7 +21,8 @@ export const Route = createFileRoute("/_authenticated/cases_/$caseId")({ compone
 function CaseDetail() {
   const { caseId } = Route.useParams();
   const qc = useQueryClient();
-  const { data: isAdmin } = useIsAdmin();
+    const { data: isAdmin } = useIsAdmin();
+  const { data: hasEditAccess } = useHasEditAccess();
   const { user } = useAuth();
 
   const caseQ = useQuery({
