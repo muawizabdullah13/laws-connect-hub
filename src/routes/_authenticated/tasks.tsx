@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { useIsAdmin } from "@/hooks/use-auth";
+import { useIsAdmin, useHasEditAccess } from "@/hooks/use-auth";
 import { format, isPast } from "date-fns";
 import { toast } from "sonner";
 
