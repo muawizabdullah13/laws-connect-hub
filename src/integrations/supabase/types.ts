@@ -123,7 +123,8 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }      editor_access: {
+      } 
+      editor_access: {
         Row: {
           granted_at: string
           granted_by: string | null
