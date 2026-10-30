@@ -57,3 +57,22 @@ export function useIsAdmin() {
     },
   });
 }
+
+// True when an admin has granted this associate permission to edit any case
+// (not only the ones they are assigned to).
+export function useHasEditAccess() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["edit-access", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      if (!user) return false;
+      const { data } = await supabase
+        .from("editor_access")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      return !!data;
+    },
+  });
+}
