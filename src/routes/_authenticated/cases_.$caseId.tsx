@@ -72,7 +72,7 @@ function CaseDetail() {
 
   const assignedProfiles = (profiles.data ?? []).filter(p => (assignments.data ?? []).some(a => a.user_id === p.id));
   const isAssignedToThisCase = (assignments.data ?? []).some(a => a.user_id === user?.id);
-  const canEdit = isAdmin || isAssignedToThisCase;
+    const canEdit = isAdmin || hasEditAccess || isAssignedToThisCase;
 
   const updateCase = useMutation({
     mutationFn: async (patch: { status?: "active" | "on_hold" | "closed" }) => {
