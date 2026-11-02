@@ -89,10 +89,26 @@ function AssociatesPage() {
                     </div>
                     {p.notes && <div className="text-xs mt-1 text-muted-foreground line-clamp-2">{p.notes}</div>}
                   </div>
-                  {isAdmin && (
-                    <EditProfileDialog profile={p} onSaved={() => qc.invalidateQueries({ queryKey: ["profiles-full"] })} />
-                  )}
-                </li>
+                                   {isAdmin && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      {roleOf(p.id) !== "admin" && (() => {
+                        const has = (editors.data ?? []).includes(p.id);
+                        return (
+                          <Button
+                            size="sm"
+                            variant={has ? "default" : "outline"}
+                            disabled={toggleEdit.isPending}
+                            onClick={() => toggleEdit.mutate({ id: p.id, grant: !has })}
+                            title={has ? "Can edit all cases. Click to remove." : "Can only edit assigned cases. Click to allow editing everywhere."}
+                          >
+                            {has ? <ShieldCheck className="h-4 w-4 mr-1" /> : <ShieldOff className="h-4 w-4 mr-1" />}
+                            {has ? "Can edit" : "Allow edit"}
+                          </Button>
+                        );
+                      })()}
+                      <EditProfileDialog profile={p} onSaved={() => qc.invalidateQueries({ queryKey: ["profiles-full"] })} />
+                    </div>
+                  )}                </li>
               ))}
               {(profiles.data ?? []).length === 0 && (
                 <li className="p-6 text-center text-sm text-muted-foreground">
