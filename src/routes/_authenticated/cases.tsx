@@ -21,14 +21,15 @@ export const Route = createFileRoute("/_authenticated/cases")({ component: Cases
 type CaseStatus = "active" | "on_hold" | "closed";
 
 function CasesPage() {
-  const { data: isAdmin } = useIsAdmin();
+    const { data: isAdmin } = useIsAdmin();
+  const { level } = useCourtLevel();
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<CaseStatus | "all">("all");
 
   const cases = useQuery({
-    queryKey: ["cases", { q, status }],
+     queryKey: ["cases", { q, status, level }],
     queryFn: async () => {
-      let query = supabase.from("cases").select("*").order("next_hearing_at", { ascending: true, nullsFirst: false });
+            let query = supabase.from("cases").select("*").eq("court_level", level).order("next_hearing_at", { ascending: true, nullsFirst: false });
       if (status !== "all") query = query.eq("status", status);
       if (q) query = query.or(`title.ilike.%${q}%,case_number.ilike.%${q}%,client_name.ilike.%${q}%`);
       const { data, error } = await query;
