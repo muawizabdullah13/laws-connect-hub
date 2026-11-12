@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogT
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Upload, FileWarning } from "lucide-react";
 import { useIsAdmin } from "@/hooks/use-auth";
+import { useCourtLevel } from "@/hooks/use-court-level";
+import { NewHcCaseDialog } from "@/components/new-hc-case-dialog";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import Papa from "papaparse";
