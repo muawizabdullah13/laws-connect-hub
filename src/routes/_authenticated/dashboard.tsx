@@ -6,20 +6,24 @@ import { Briefcase, CheckSquare, Gavel } from "lucide-react";
 import { format, isToday, startOfDay, endOfDay } from "date-fns";
 import { EnableNotificationsBanner } from "@/components/enable-notifications-banner";
 import { useAuth } from "@/hooks/use-auth";
+import { useCourtLevel } from "@/hooks/use-court-level";
+import { CourtLevelSwitch } from "@/components/court-level-switch";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({ component: Dashboard });
 
 function Dashboard() {
   const { user } = useAuth();
+  const { level } = useCourtLevel();
 
   const todayHearings = useQuery({
-    queryKey: ["dash", "today-hearings"],
+    queryKey: ["dash", "today-hearings", level],
     queryFn: async () => {
       const start = startOfDay(new Date()).toISOString();
       const end = endOfDay(new Date()).toISOString();
       const { data, error } = await supabase
         .from("hearings")
-        .select("id, scheduled_at, court, purpose, case_id, cases(title, case_number)")
+        .select("id, scheduled_at, court, purpose, case_id, cases!inner(title, case_number, court_level)")
+        .eq("cases.court_level", level)
         .gte("scheduled_at", start).lte("scheduled_at", end)
         .order("scheduled_at", { ascending: true });
       if (error) throw error;
@@ -32,27 +36,29 @@ function Dashboard() {
   // anything), fall back to showing the firm's most recently active cases
   // with a link through to the full case list.
   const myAssignments = useQuery({
-    queryKey: ["dash", "my-assignments", user?.id],
+    queryKey: ["dash", "my-assignments", user?.id, level],
     enabled: !!user,
     queryFn: async () => {
       if (!user) return [];
       const { data, error } = await supabase
         .from("case_assignments")
-        .select("cases(id, title, case_number, status, next_hearing_at)")
-        .eq("user_id", user.id);
+        .select("cases!inner(id, title, case_number, status, next_hearing_at, court_level)")
+        .eq("user_id", user.id)
+        .eq("cases.court_level", level);
       if (error) throw error;
       return (data ?? []).map(r => r.cases).filter(Boolean) as { id: string; title: string; case_number: string | null; status: string; next_hearing_at: string | null }[];
     },
   });
 
   const fallbackCases = useQuery({
-    queryKey: ["dash", "fallback-cases"],
+    queryKey: ["dash", "fallback-cases", level],
     enabled: !!user && myAssignments.isSuccess && myAssignments.data.length === 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("cases")
         .select("id, title, case_number, status, next_hearing_at")
         .eq("status", "active")
+        .eq("court_level", level)
         .order("created_at", { ascending: false })
         .limit(5);
       if (error) throw error;
@@ -61,10 +67,10 @@ function Dashboard() {
   });
 
   const counts = useQuery({
-    queryKey: ["dash", "counts"],
+    queryKey: ["dash", "counts", level],
     queryFn: async () => {
       const [c, t] = await Promise.all([
-        supabase.from("cases").select("id", { count: "exact", head: true }).eq("status", "active"),
+        supabase.from("cases").select("id", { count: "exact", head: true }).eq("status", "active").eq("court_level", level),
         supabase.from("tasks").select("id", { count: "exact", head: true }).neq("status", "done"),
       ]);
       return { activeCases: c.count ?? 0, openTasks: t.count ?? 0 };
@@ -90,6 +96,11 @@ function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <EnableNotificationsBanner />
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-serif text-2xl">{level === "high" ? "High Court" : "District Court"}</h1>
+        <CourtLevelSwitch />
+      </div>
 
       <Card>
         <CardHeader><CardTitle className="font-serif">Today's cause list</CardTitle></CardHeader>
