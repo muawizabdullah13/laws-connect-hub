@@ -39,7 +39,9 @@ function CasesPage() {
       return data ?? [];
     },
   });
-
+        .select("id, scheduled_at, court, purpose, case_id, cases!inner(title, case_number, court, court_level)")
+        .eq("cases.court_level", level)
+        .order("scheduled_at");
   return (
     <div className="max-w-6xl mx-auto space-y-4">
       <div className="flex flex-wrap items-center gap-2">
