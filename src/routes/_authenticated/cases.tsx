@@ -53,8 +53,8 @@ function CasesPage() {
             <SelectItem value="closed">Closed</SelectItem>
           </SelectContent>
         </Select>
-        {isAdmin && <ImportCasesDialog />}
-        {isAdmin && <NewCaseDialog />}
+                {isAdmin && level === "district" && <ImportCasesDialog />}
+        {isAdmin && (level === "high" ? <NewHcCaseDialog /> : <NewCaseDialog />)}
       </div>
 
       <Card>
